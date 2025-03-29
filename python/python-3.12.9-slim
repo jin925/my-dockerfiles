@@ -1,0 +1,22 @@
+# 使用官方镜像3.12.9-slim作为基础镜像
+FROM python:3.12.9-slim 
+ 
+LABEL maintainer="itlaomao <jin925@qq.com>"  \
+      build.date="2025-03-28"  
+ 
+# 一、系统级配置 
+RUN set -eux; \
+    # 备份源文件 
+    cp /etc/apt/sources.list.d/debian.sources  /etc/apt/sources.list.d/debian.sources.bak;  \
+    # 替换为清华源（适配Debian 12+的sources格式）
+    sed -i "s|http://.*deb.debian.org|https://mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.list.d/debian.sources;  \
+    sed -i "s|https://.*security.debian.org|https://mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.list.d/debian.sources;  \
+    # 更新软件包列表（推荐添加）
+    apt-get update || echo "源更新跳过（非阻塞）"
+ 
+# 二、Python环境配置 
+RUN pip config set global.index-url  https://mirrors.aliyun.com/pypi/simple/  \
+    && pip config set install.trusted-host  mirrors.aliyun.com  \
+    && pip cache purge  # 清理缓存减小镜像体积 
+    
+CMD ["python", "-V"]
